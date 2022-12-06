@@ -111,6 +111,42 @@ export class AttendacneService {
     });
   }
 
+  async markAttendanceManually(
+    employee: Employee,
+    date: string,
+    inTime: string,
+    outTime
+  ): Promise<any> {
+    const attendance = await this.getAttendance(employee.employee_number, date);
+
+    let attendanceType = "Present";
+    if (employee.shift.start_time.toString() < inTime) {
+      attendanceType = "Late";
+    } else {
+      attendanceType = "Present";
+    }
+    let newAttendance;
+    if (attendance == true) {
+      newAttendance = await this.attendanceRepository.save(
+        this.attendanceRepository.create({
+          employee_number: employee.employee_number,
+          attendance_date: date,
+          intime: inTime,
+          outtime: outTime,
+          type: attendanceType,
+        })
+      );
+    } else {
+      newAttendance = await this.attendanceRepository.save({
+        ...attendance,
+        intime: inTime,
+        outtime: outTime,
+        type: attendanceType,
+      });
+    }
+    return await this.getAttendanceById(newAttendance.id);
+  }
+
   async getAttendanceDataDto(getAttendanceDataDto: GetAttendanceDataDto) {
     // let query = `SELECT att.*,ep.employee_name,ep.shift_id,s.start_time, s.end_time,CONCAT(s.start_time," - ",s.end_time) AS shift, (att.outtime-att.intime) as working_hours FROM attendance att left join employees ep on ep.employee_number=att.employee_number left join shifts s on s.id=ep.shift_id WHERE att.attendance_date BETWEEN '${getAttendanceDataDto.from_date}' AND '${getAttendanceDataDto.to_date}';`;
 
