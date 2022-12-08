@@ -121,9 +121,11 @@ export class AttendacneService {
 
     let attendanceType = "Present";
     let intimeArray = inTime.split(":");
-    let newIntime: string = `${intimeArray[0]}:${+intimeArray[1] + 10}:${
-      intimeArray[2]
-    }`;
+    let newIntime: string = `${intimeArray[0]}:${
+      +intimeArray[1] < 10 ? "0" : ""
+    } +${+intimeArray[1] + 10}:${intimeArray[2]}`;
+    console.log(newIntime);
+
     if (employee.shift.start_time.toString() < newIntime) {
       attendanceType = "Late";
     } else {
