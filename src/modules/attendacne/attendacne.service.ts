@@ -25,7 +25,10 @@ export class AttendacneService {
     );
     const attendanceTime = GetDate.currentTime();
     let attendanceType = "Present";
-    if (employee.shift.start_time.getTime() - new Date().getTime() < 600000) {
+    if (
+      employee.shift.start_time.getTime() - new Date().getTime() <
+      10 * 60000
+    ) {
       attendanceType = "Late";
     } else {
       attendanceType = "Present";
