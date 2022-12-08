@@ -126,7 +126,10 @@ export class AttendacneService {
     } +${+intimeArray[1] + 10}:${intimeArray[2]}`;
     console.log(newIntime);
 
-    if (employee.shift.start_time.toString() < newIntime) {
+    if (
+      new Date(Date.parse(employee.shift.start_time.toString())).getTime() <
+      new Date(Date.parse(newIntime)).getTime()
+    ) {
       attendanceType = "Late";
     } else {
       attendanceType = "Present";
