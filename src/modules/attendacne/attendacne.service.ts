@@ -25,12 +25,8 @@ export class AttendacneService {
     );
     const attendanceTime = GetDate.currentTime();
     let attendanceType = "Present";
-    if (
-      employee.shift.start_time.getTime() + 10 * 60000 <
-      new Date().getTime()
-    ) {
+    if (employee.shift.start_time.toString() < attendanceTime) {
       attendanceType = "Late";
-      console.log(employee.shift.start_time.getTime() + 10 * 60000);
     } else {
       attendanceType = "Present";
     }
@@ -124,12 +120,7 @@ export class AttendacneService {
     const attendance = await this.getAttendance(employee.employee_number, date);
 
     let attendanceType = "Present";
-    // if (employee.shift.start_time.toString() < inTime) {
-    if (
-      new Date(employee.shift.start_time).getTime() + 10 * 60000 <
-      new Date(inTime).getTime()
-    ) {
-      console.log(new Date(employee.shift.start_time).getTime() + 10 * 60000);
+    if (employee.shift.start_time.toString() < inTime) {
       attendanceType = "Late";
     } else {
       attendanceType = "Present";
