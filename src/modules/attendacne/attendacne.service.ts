@@ -120,7 +120,11 @@ export class AttendacneService {
     const attendance = await this.getAttendance(employee.employee_number, date);
 
     let attendanceType = "Present";
-    if (employee.shift.start_time.toString() < inTime) {
+    let intimeArray = inTime.split(":");
+    let newIntime: string = `${intimeArray[0]}:${+intimeArray[1] + 10}:${
+      intimeArray[2]
+    }`;
+    if (employee.shift.start_time.toString() < newIntime) {
       attendanceType = "Late";
     } else {
       attendanceType = "Present";
