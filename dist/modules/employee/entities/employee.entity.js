@@ -15,18 +15,19 @@ const attendacne_entity_1 = require("../../attendacne/entities/attendacne.entity
 const typeorm_1 = require("typeorm");
 const employee_station_entity_1 = require("./employee-station.entity");
 const shift_entity_1 = require("../../shift/entities/shift.entity");
+const notification_entity_1 = require("../../notification/entities/notification.entity");
 let Employee = class Employee extends generic_entity_1.GenericEntity {
 };
 __decorate([
     (0, typeorm_1.Column)({
         nullable: false,
-        unique: true
+        unique: true,
     }),
     __metadata("design:type", Number)
 ], Employee.prototype, "employee_number", void 0);
 __decorate([
     (0, typeorm_1.Column)({
-        nullable: false
+        nullable: false,
     }),
     __metadata("design:type", String)
 ], Employee.prototype, "employee_name", void 0);
@@ -43,6 +44,10 @@ __decorate([
     (0, typeorm_1.JoinColumn)({ name: "shift_id" }),
     __metadata("design:type", shift_entity_1.Shift)
 ], Employee.prototype, "shift", void 0);
+__decorate([
+    (0, typeorm_1.OneToMany)(() => notification_entity_1.Notification, (notification) => notification.employee),
+    __metadata("design:type", Array)
+], Employee.prototype, "notification", void 0);
 Employee = __decorate([
     (0, typeorm_1.Entity)("employees")
 ], Employee);

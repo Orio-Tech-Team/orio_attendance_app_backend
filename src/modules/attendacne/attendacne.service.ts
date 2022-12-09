@@ -25,7 +25,14 @@ export class AttendacneService {
     );
     const attendanceTime = GetDate.currentTime();
     let attendanceType = "Present";
-    if (employee.shift.start_time.toString() < attendanceTime) {
+
+    let shiftTime = employee.shift.start_time.toString();
+    let shiftList = shiftTime.split(":");
+    shiftList[1] = (+shiftList[1] + 10).toString();
+
+    let graceTime = `${shiftList[0]}:${shiftList[1]}:${shiftList[2]}`;
+
+    if (graceTime < attendanceTime) {
       attendanceType = "Late";
     } else {
       attendanceType = "Present";
@@ -120,16 +127,13 @@ export class AttendacneService {
     const attendance = await this.getAttendance(employee.employee_number, date);
 
     let attendanceType = "Present";
-    let intimeArray = inTime.split(":");
-    let newIntime: string = `${intimeArray[0]}:${
-      +intimeArray[1] < 10 ? "0" : ""
-    } +${+intimeArray[1] + 10}:${intimeArray[2]}`;
-    console.log(newIntime);
+    let shiftTime = employee.shift.start_time.toString();
+    let shiftList = shiftTime.split(":");
+    shiftList[1] = (+shiftList[1] + 10).toString();
 
-    if (
-      new Date(Date.parse(employee.shift.start_time.toString())).getTime() <
-      new Date(Date.parse(newIntime)).getTime()
-    ) {
+    let graceTime = `${shiftList[0]}:${shiftList[1]}:${shiftList[2]}`;
+
+    if (graceTime < inTime) {
       attendanceType = "Late";
     } else {
       attendanceType = "Present";

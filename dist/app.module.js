@@ -16,12 +16,22 @@ const employee_module_1 = require("./modules/employee/employee.module");
 const station_module_1 = require("./modules/station/station.module");
 const attendacne_module_1 = require("./modules/attendacne/attendacne.module");
 const cities_module_1 = require("./modules/cities/cities.module");
+const notification_module_1 = require("./modules/notification/notification.module");
 let AppModule = class AppModule {
     configure(consumer) {
         consumer
             .apply(token_middleware_1.TokenMiddleware)
-            .exclude({ path: '/attendance-app/attendance/server', method: common_1.RequestMethod.ALL }, { path: '/attendance-app/attendance/getattendancedata', method: common_1.RequestMethod.ALL }, { path: '/attendance-app/employee/all', method: common_1.RequestMethod.ALL })
-            .forRoutes({ path: '*', method: common_1.RequestMethod.ALL });
+            .exclude({
+            path: "/attendance-app/attendance/server",
+            method: common_1.RequestMethod.ALL,
+        }, {
+            path: "/attendance-app/attendance/getattendancedata",
+            method: common_1.RequestMethod.ALL,
+        }, {
+            path: "/attendance-app/attendance/manual",
+            method: common_1.RequestMethod.ALL,
+        }, { path: "/attendance-app/employee/all", method: common_1.RequestMethod.ALL }, { path: "/attendance-app/shift/all", method: common_1.RequestMethod.ALL })
+            .forRoutes({ path: "*", method: common_1.RequestMethod.ALL });
     }
 };
 AppModule = __decorate([
@@ -34,7 +44,8 @@ AppModule = __decorate([
             employee_module_1.EmployeeModule,
             station_module_1.StationModule,
             attendacne_module_1.AttendacneModule,
-            cities_module_1.CitiesModule
+            cities_module_1.CitiesModule,
+            notification_module_1.NotificationModule,
         ],
         controllers: [],
         providers: [],

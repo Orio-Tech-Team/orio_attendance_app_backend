@@ -26,9 +26,13 @@ let AttendacneService = class AttendacneService {
     async markAttendance(employee) {
         const attendanceDate = await date_common_1.GetDate.currentDate();
         const attendance = await this.getAttendance(employee.employee_number, attendanceDate);
-        const attendanceTime = date_common_1.GetDate.currentTime().toString();
+        const attendanceTime = date_common_1.GetDate.currentTime();
         let attendanceType = "Present";
-        if ((employee.shift.start_time).toString() < attendanceTime) {
+        let shiftTime = employee.shift.start_time.toString();
+        let shiftList = shiftTime.split(":");
+        shiftList[1] = (+shiftList[1] + 10).toString();
+        let graceTime = `${shiftList[0]}:${shiftList[1]}:${shiftList[2]}`;
+        if (graceTime < attendanceTime) {
             attendanceType = "Late";
         }
         else {
@@ -40,7 +44,7 @@ let AttendacneService = class AttendacneService {
                 employee_number: employee.employee_number,
                 attendance_date: attendanceDate,
                 intime: attendanceTime,
-                type: attendanceType
+                type: attendanceType,
             }));
         }
         else {
@@ -49,47 +53,90 @@ let AttendacneService = class AttendacneService {
         return await this.getAttendanceById(newAttendance.id);
     }
     async getAttendance(employeeNumber, attendanceDate) {
-        return this.attendanceRepository.findOneOrFail({
+        return this.attendanceRepository
+            .findOneOrFail({
             where: {
                 employee_number: employeeNumber,
-                attendance_date: attendanceDate
-            }
-        }).catch(error => {
+                attendance_date: attendanceDate,
+            },
+        })
+            .catch((error) => {
             return true;
         });
     }
     async getAttendanceByMonth(getAttendanceDto, employeeNumber) {
-        const attendance = await this.attendanceRepository.createQueryBuilder('attendance').
-            select(["attendance.employee_number,attendance.type,attendance.intime,attendance.outtime,date_format(attendance.attendance_date,'%Y-%m-%d') as attendance_date", "DATE_FORMAT(attendance_date, '%a') as day", "TIMEDIFF(outtime , intime) as working_hours"]).
-            where("employee_number = :employeeNumber AND DATE_FORMAT(attendance_date,'%Y-%m') = :attendanceDate", {
+        const attendance = await this.attendanceRepository
+            .createQueryBuilder("attendance")
+            .select([
+            "attendance.employee_number,attendance.type,attendance.intime,attendance.outtime,date_format(attendance.attendance_date,'%Y-%m-%d') as attendance_date",
+            "DATE_FORMAT(attendance_date, '%a') as day",
+            "TIMEDIFF(outtime , intime) as working_hours",
+        ])
+            .where("employee_number = :employeeNumber AND DATE_FORMAT(attendance_date,'%Y-%m') = :attendanceDate", {
             attendanceDate: getAttendanceDto.attedance_date,
-            employeeNumber: employeeNumber
-        }).
-            getRawMany();
+            employeeNumber: employeeNumber,
+        })
+            .getRawMany();
         return attendance;
     }
     async getAttendanceById(id) {
-        return await this.attendanceRepository.createQueryBuilder('attendance').
-            select(["attendance.employee_number,attendance.type,attendance.intime,attendance.outtime,date_format(attendance.attendance_date,'%Y-%m-%d') as attendance_date", "DATE_FORMAT(attendance_date, '%a') as day", "TIMEDIFF(outtime , intime) as working_hours"]).
-            where("id = :id", {
-            id: id
-        }).
-            getRawOne();
+        return await this.attendanceRepository
+            .createQueryBuilder("attendance")
+            .select([
+            "attendance.employee_number,attendance.type,attendance.intime,attendance.outtime,date_format(attendance.attendance_date,'%Y-%m-%d') as attendance_date",
+            "DATE_FORMAT(attendance_date, '%a') as day",
+            "TIMEDIFF(outtime , intime) as working_hours",
+        ])
+            .where("id = :id", {
+            id: id,
+        })
+            .getRawOne();
     }
     async getAttendanceServerUpdate(getAttendanceServerData) {
         return await this.attendanceRepository.find({
             where: {
-                updated_at: (0, typeorm_2.MoreThanOrEqual)(getAttendanceServerData.last_update)
-            }
+                updated_at: (0, typeorm_2.MoreThanOrEqual)(getAttendanceServerData.last_update),
+            },
         });
     }
+    async markAttendanceManually(employee, date, inTime, outTime) {
+        const attendance = await this.getAttendance(employee.employee_number, date);
+        let attendanceType = "Present";
+        let shiftTime = employee.shift.start_time.toString();
+        let shiftList = shiftTime.split(":");
+        shiftList[1] = (+shiftList[1] + 10).toString();
+        let graceTime = `${shiftList[0]}:${shiftList[1]}:${shiftList[2]}`;
+        if (graceTime < inTime) {
+            attendanceType = "Late";
+        }
+        else {
+            attendanceType = "Present";
+        }
+        let newAttendance;
+        if (attendance == true) {
+            newAttendance = await this.attendanceRepository.save(this.attendanceRepository.create({
+                employee_number: employee.employee_number,
+                attendance_date: date,
+                intime: inTime,
+                outtime: outTime,
+                type: attendanceType,
+            }));
+        }
+        else {
+            newAttendance = await this.attendanceRepository.save(Object.assign(Object.assign({}, attendance), { intime: inTime, outtime: outTime, type: attendanceType }));
+        }
+        return await this.getAttendanceById(newAttendance.id);
+    }
     async getAttendanceDataDto(getAttendanceDataDto) {
-        let query = "SELECT employees.* , IFNULL(attendance.intime,'00:00:00') as intime , IFNULL(attendance.outtime, '00:00:00') as outtime , DATE_FORMAT(employees.attendance_date, '%a') as day , (CASE WHEN attendance.type IS NULL AND DATE_FORMAT(employees.attendance_date,'%a') IN ('Sat','Sun') THEN 'Holiday' WHEN attendance.type IS NULL THEN 'Absent' ELSE attendance.type END) as type , TIMEDIFF(IFNULL(outtime,'00:00:00') , IFNULL(intime,'00:00:00')) as working_hours FROM attendance RIGHT JOIN (SELECT employees.employee_number ,employees.employee_name , v.selected_date as attendance_date FROM (SELECT ADDDATE('1970-01-01',t4.i*10000 + t3.i*1000 + t2.i*100 + t1.i*10 + t0.i) selected_date FROM (SELECT 0 i UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) t0,(SELECT 0 i UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) t1,(SELECT 0 i UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) t2,(SELECT 0 i UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) t3,(SELECT 0 i UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) t4) v , employees WHERE selected_date BETWEEN '" + getAttendanceDataDto.from_date + "' AND '" + getAttendanceDataDto.to_date + "') employees ON attendance.attendance_date = employees.attendance_date AND attendance.employee_number = employees.employee_number";
+        let query = `SELECT e.id,e.shift_id,e.employee_number,e.employee_name,IFNULL(a.intime,0) as intime,IFNULL(a.outtime,0) as outtime,IFNULL(a.type,'Absent') as type,'${getAttendanceDataDto.from_date}' as attendance_date, IFNULL(TIMEDIFF(outtime,intime),0) as working_hours, CONCAT(s.start_time,' - ',s.end_time) as shift from employees e left JOIN attendance a on a.employee_number=e.employee_number and a.attendance_date='${getAttendanceDataDto.from_date}' left JOIN shifts s on s.id=e.shift_id`;
         if (!getAttendanceDataDto.employee_number) {
             return await (0, typeorm_3.getManager)().query(query);
         }
         else {
-            query += " WHERE employees.employee_number ='" + getAttendanceDataDto.employee_number + "'";
+            query +=
+                " WHERE employees.employee_number ='" +
+                    getAttendanceDataDto.employee_number +
+                    "'";
             return await (0, typeorm_3.getManager)().query(query);
         }
     }

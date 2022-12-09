@@ -30,6 +30,14 @@ let AttendacneController = class AttendacneController {
         const employee = await this.employeeService.findByShift(employeeNumber);
         return await this.attendacneService.markAttendance(employee);
     }
+    async markAttendanceManually(request) {
+        const employeeNumber = request.body.emp_id;
+        const employee = await this.employeeService.findByShift(employeeNumber);
+        const date = request.body.date;
+        const inTime = request.body.in_time;
+        const outTime = request.body.out_time;
+        return await this.attendacneService.markAttendanceManually(employee, date, inTime, outTime);
+    }
     async getAttendance(getAttendanceDto, request) {
         const employeeNumber = request.user_information.refrence_number;
         return await this.attendacneService.getAttendanceByMonth(getAttendanceDto, employeeNumber);
@@ -42,7 +50,7 @@ let AttendacneController = class AttendacneController {
     }
 };
 __decorate([
-    (0, swagger_1.ApiBearerAuth)('JWT-auth'),
+    (0, swagger_1.ApiBearerAuth)("JWT-auth"),
     (0, common_1.Get)(),
     __param(0, (0, common_1.Req)()),
     __metadata("design:type", Function),
@@ -50,7 +58,14 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], AttendacneController.prototype, "markAttendance", null);
 __decorate([
-    (0, swagger_1.ApiBearerAuth)('JWT-auth'),
+    (0, common_1.Post)("manual"),
+    __param(0, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], AttendacneController.prototype, "markAttendanceManually", null);
+__decorate([
+    (0, swagger_1.ApiBearerAuth)("JWT-auth"),
     (0, common_1.Post)(),
     __param(0, (0, common_1.Body)()),
     __param(1, (0, common_1.Req)()),
@@ -73,7 +88,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], AttendacneController.prototype, "function", null);
 AttendacneController = __decorate([
-    (0, common_1.Controller)('attendance'),
+    (0, common_1.Controller)("attendance"),
     __metadata("design:paramtypes", [attendacne_service_1.AttendacneService,
         employee_service_1.EmployeeService])
 ], AttendacneController);
