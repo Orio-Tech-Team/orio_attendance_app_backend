@@ -23,6 +23,34 @@ let AttendacneService = class AttendacneService {
     constructor(attendanceRepository) {
         this.attendanceRepository = attendanceRepository;
     }
+    async markAttendanceManually(employee, date, inTime, outTime) {
+        const attendance = await this.getAttendance(employee.employee_number, date);
+        let attendanceType = "Present";
+        let shiftTime = employee.shift.start_time.toString();
+        let shiftList = shiftTime.split(":");
+        shiftList[1] = (+shiftList[1] + 10).toString();
+        let graceTime = `${shiftList[0]}:${shiftList[1]}:${shiftList[2]}`;
+        if (graceTime < inTime) {
+            attendanceType = "Late";
+        }
+        else {
+            attendanceType = "Present";
+        }
+        let newAttendance;
+        if (attendance == true) {
+            newAttendance = await this.attendanceRepository.save(this.attendanceRepository.create({
+                employee_number: employee.employee_number,
+                attendance_date: date,
+                intime: inTime,
+                outtime: outTime,
+                type: attendanceType,
+            }));
+        }
+        else {
+            newAttendance = await this.attendanceRepository.save(Object.assign(Object.assign({}, attendance), { intime: inTime, outtime: outTime, type: attendanceType }));
+        }
+        return await this.getAttendanceById(newAttendance.id);
+    }
     async markAttendance(employee) {
         const attendanceDate = await date_common_1.GetDate.currentDate();
         const attendance = await this.getAttendance(employee.employee_number, attendanceDate);
@@ -98,34 +126,6 @@ let AttendacneService = class AttendacneService {
                 updated_at: (0, typeorm_2.MoreThanOrEqual)(getAttendanceServerData.last_update),
             },
         });
-    }
-    async markAttendanceManually(employee, date, inTime, outTime) {
-        const attendance = await this.getAttendance(employee.employee_number, date);
-        let attendanceType = "Present";
-        let shiftTime = employee.shift.start_time.toString();
-        let shiftList = shiftTime.split(":");
-        shiftList[1] = (+shiftList[1] + 10).toString();
-        let graceTime = `${shiftList[0]}:${shiftList[1]}:${shiftList[2]}`;
-        if (graceTime < inTime) {
-            attendanceType = "Late";
-        }
-        else {
-            attendanceType = "Present";
-        }
-        let newAttendance;
-        if (attendance == true) {
-            newAttendance = await this.attendanceRepository.save(this.attendanceRepository.create({
-                employee_number: employee.employee_number,
-                attendance_date: date,
-                intime: inTime,
-                outtime: outTime,
-                type: attendanceType,
-            }));
-        }
-        else {
-            newAttendance = await this.attendanceRepository.save(Object.assign(Object.assign({}, attendance), { intime: inTime, outtime: outTime, type: attendanceType }));
-        }
-        return await this.getAttendanceById(newAttendance.id);
     }
     async getAttendanceDataDto(getAttendanceDataDto) {
         let query = `SELECT e.id,e.shift_id,e.employee_number,e.employee_name,IFNULL(a.intime,0) as intime,IFNULL(a.outtime,0) as outtime,IFNULL(a.type,'Absent') as type,'${getAttendanceDataDto.from_date}' as attendance_date, IFNULL(TIMEDIFF(outtime,intime),0) as working_hours, CONCAT(s.start_time,' - ',s.end_time) as shift from employees e left JOIN attendance a on a.employee_number=e.employee_number and a.attendance_date='${getAttendanceDataDto.from_date}' left JOIN shifts s on s.id=e.shift_id`;
