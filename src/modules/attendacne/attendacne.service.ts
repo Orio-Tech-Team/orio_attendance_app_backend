@@ -17,6 +17,46 @@ export class AttendacneService {
     private readonly attendanceRepository: Repository<Attendance>
   ) {}
 
+  async markAttendanceManually(employee: Employee): Promise<any> {
+    const attendanceDate = await GetDate.currentDate();
+    const attendance = await this.getAttendance(
+      employee.employee_number,
+      attendanceDate
+    );
+    //
+    const attendanceTime = GetDate.currentTime();
+    let attendanceType = "Present";
+    //
+    let shiftTime = employee.shift.start_time.toString();
+    let shiftList = shiftTime.split(":");
+    shiftList[1] = (+shiftList[1] + 10).toString();
+
+    let graceTime = `${shiftList[0]}:${shiftList[1]}:${shiftList[2]}`;
+
+    if (graceTime < attendanceTime) {
+      attendanceType = "Late";
+    } else {
+      attendanceType = "Present";
+    }
+    let newAttendance;
+    if (attendance == true) {
+      newAttendance = await this.attendanceRepository.save(
+        this.attendanceRepository.create({
+          employee_number: employee.employee_number,
+          attendance_date: attendanceDate,
+          intime: attendanceTime,
+          type: attendanceType,
+        })
+      );
+    } else {
+      newAttendance = await this.attendanceRepository.save({
+        ...attendance,
+        outtime: attendanceTime,
+      });
+    }
+    return await this.getAttendanceById(newAttendance.id);
+  }
+
   async markAttendance(employee: Employee): Promise<any> {
     const attendanceDate = await GetDate.currentDate();
     const attendance = await this.getAttendance(
@@ -116,48 +156,6 @@ export class AttendacneService {
         updated_at: MoreThanOrEqual(getAttendanceServerData.last_update),
       },
     });
-  }
-
-  async markAttendanceManually(
-    employee: Employee,
-    date: string,
-    inTime: string,
-    outTime
-  ): Promise<any> {
-    const attendance = await this.getAttendance(employee.employee_number, date);
-
-    let attendanceType = "Present";
-    let shiftTime = employee.shift.start_time.toString();
-    let shiftList = shiftTime.split(":");
-    shiftList[1] = (+shiftList[1] + 10).toString();
-
-    let graceTime = `${shiftList[0]}:${shiftList[1]}:${shiftList[2]}`;
-
-    if (graceTime < inTime) {
-      attendanceType = "Late";
-    } else {
-      attendanceType = "Present";
-    }
-    let newAttendance;
-    if (attendance == true) {
-      newAttendance = await this.attendanceRepository.save(
-        this.attendanceRepository.create({
-          employee_number: employee.employee_number,
-          attendance_date: date,
-          intime: inTime,
-          outtime: outTime,
-          type: attendanceType,
-        })
-      );
-    } else {
-      newAttendance = await this.attendanceRepository.save({
-        ...attendance,
-        intime: inTime,
-        outtime: outTime,
-        type: attendanceType,
-      });
-    }
-    return await this.getAttendanceById(newAttendance.id);
   }
 
   async getAttendanceDataDto(getAttendanceDataDto: GetAttendanceDataDto) {

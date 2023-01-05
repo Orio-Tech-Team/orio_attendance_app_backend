@@ -25,16 +25,7 @@ export class AttendacneController {
   async markAttendanceManually(@Req() request): Promise<any> {
     const employeeNumber = request.body.emp_id;
     const employee = await this.employeeService.findByShift(employeeNumber);
-    const date: string = request.body.date;
-    const inTime: string = request.body.in_time;
-    const outTime: string = request.body.out_time;
-
-    return await this.attendacneService.markAttendanceManually(
-      employee,
-      date,
-      inTime,
-      outTime
-    );
+    return await this.attendacneService.markAttendanceManually(employee);
   }
 
   @ApiBearerAuth("JWT-auth")
