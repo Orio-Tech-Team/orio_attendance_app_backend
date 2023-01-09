@@ -45,7 +45,6 @@ export class AttendacneService {
             employee_number: employee.employee_number,
             attendance_date: date,
             intime: inTime,
-            outtime: null,
             type: attendanceType,
           })
         );
@@ -62,12 +61,20 @@ export class AttendacneService {
       }
       console.log(newAttendance);
     } else {
-      newAttendance = await this.attendanceRepository.save({
-        ...attendance,
-        intime: inTime,
-        outtime: outTime,
-        type: attendanceType,
-      });
+      if (outTime == "") {
+        newAttendance = await this.attendanceRepository.save({
+          ...attendance,
+          intime: inTime,
+          type: attendanceType,
+        });
+      } else {
+        newAttendance = await this.attendanceRepository.save({
+          ...attendance,
+          intime: inTime,
+          outtime: outTime,
+          type: attendanceType,
+        });
+      }
     }
     return await this.getAttendanceById(newAttendance.id);
   }
