@@ -45,6 +45,7 @@ export class AttendacneService {
             employee_number: employee.employee_number,
             attendance_date: date,
             intime: inTime,
+            outtime: null,
             type: attendanceType,
           })
         );
@@ -59,6 +60,7 @@ export class AttendacneService {
           })
         );
       }
+      console.log(newAttendance);
     } else {
       newAttendance = await this.attendanceRepository.save({
         ...attendance,
