@@ -74,6 +74,10 @@ export class AttendacneService {
 
     let graceTime = `${shiftList[0]}:${shiftList[1]}:${shiftList[2]}`;
 
+    console.log(`attendance time ${attendanceTime}`);
+    console.log(`shift time ${shiftTime}`);
+    console.log(`grace time ${graceTime}`);
+
     if (graceTime < attendanceTime) {
       attendanceType = "Late";
     } else {
