@@ -25,6 +25,9 @@ let AppModule = class AppModule {
             path: "/attendance-app/attendance/server",
             method: common_1.RequestMethod.ALL,
         }, {
+            path: "/attendance-app/employee/get-employee",
+            method: common_1.RequestMethod.GET,
+        }, {
             path: "/attendance-app/attendance/getattendancedata",
             method: common_1.RequestMethod.ALL,
         }, {

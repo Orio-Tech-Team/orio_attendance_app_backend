@@ -20,7 +20,9 @@ export class AttendacneController {
     const employee = await this.employeeService.findByShift(employeeNumber);
     return await this.attendacneService.markAttendance(employee);
   }
+  //
 
+  //
   @Post("manual")
   async markAttendanceManually(@Req() request): Promise<any> {
     const employeeNumber = request.body.emp_id;

@@ -24,18 +24,27 @@ let EmployeeController = class EmployeeController {
         const employeeNumber = req.user_information.refrence_number;
         return await this.employeeService.findByEmployee(employeeNumber);
     }
+    async getEmployees() {
+        return await this.employeeService.findEmployee();
+    }
     async find(req) {
         return await this.employeeService.find();
     }
 };
 __decorate([
-    (0, swagger_1.ApiBearerAuth)('JWT-auth'),
+    (0, swagger_1.ApiBearerAuth)("JWT-auth"),
     (0, common_1.Get)(),
     __param(0, (0, common_1.Req)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], EmployeeController.prototype, "findByEmployee", null);
+__decorate([
+    (0, common_1.Get)("get-employee"),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], EmployeeController.prototype, "getEmployees", null);
 __decorate([
     (0, common_1.Get)("all"),
     __param(0, (0, common_1.Req)()),
@@ -44,7 +53,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], EmployeeController.prototype, "find", null);
 EmployeeController = __decorate([
-    (0, common_1.Controller)('employee'),
+    (0, common_1.Controller)("employee"),
     __metadata("design:paramtypes", [employee_service_1.EmployeeService])
 ], EmployeeController);
 exports.EmployeeController = EmployeeController;

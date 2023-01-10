@@ -38,16 +38,32 @@ let AttendacneService = class AttendacneService {
         }
         let newAttendance;
         if (attendance == true) {
-            newAttendance = await this.attendanceRepository.save(this.attendanceRepository.create({
-                employee_number: employee.employee_number,
-                attendance_date: date,
-                intime: inTime,
-                outtime: outTime,
-                type: attendanceType,
-            }));
+            if (outTime == "") {
+                newAttendance = await this.attendanceRepository.save(this.attendanceRepository.create({
+                    employee_number: employee.employee_number,
+                    attendance_date: date,
+                    intime: inTime,
+                    type: attendanceType,
+                }));
+            }
+            else {
+                newAttendance = await this.attendanceRepository.save(this.attendanceRepository.create({
+                    employee_number: employee.employee_number,
+                    attendance_date: date,
+                    intime: inTime,
+                    outtime: outTime,
+                    type: attendanceType,
+                }));
+            }
+            console.log(newAttendance);
         }
         else {
-            newAttendance = await this.attendanceRepository.save(Object.assign(Object.assign({}, attendance), { intime: inTime, outtime: outTime, type: attendanceType }));
+            if (outTime == "") {
+                newAttendance = await this.attendanceRepository.save(Object.assign(Object.assign({}, attendance), { intime: inTime, type: attendanceType }));
+            }
+            else {
+                newAttendance = await this.attendanceRepository.save(Object.assign(Object.assign({}, attendance), { intime: inTime, outtime: outTime, type: attendanceType }));
+            }
         }
         return await this.getAttendanceById(newAttendance.id);
     }
@@ -60,6 +76,9 @@ let AttendacneService = class AttendacneService {
         let shiftList = shiftTime.split(":");
         shiftList[1] = (+shiftList[1] + 10).toString();
         let graceTime = `${shiftList[0]}:${shiftList[1]}:${shiftList[2]}`;
+        console.log(`attendance time ${attendanceTime}`);
+        console.log(`shift time ${shiftTime}`);
+        console.log(`grace time ${graceTime}`);
         if (graceTime < attendanceTime) {
             attendanceType = "Late";
         }

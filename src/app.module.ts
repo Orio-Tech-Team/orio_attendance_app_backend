@@ -39,6 +39,10 @@ export class AppModule implements NestModule {
           method: RequestMethod.ALL,
         },
         {
+          path: "/attendance-app/employee/get-employee",
+          method: RequestMethod.GET,
+        },
+        {
           path: "/attendance-app/attendance/getattendancedata",
           method: RequestMethod.ALL,
         },

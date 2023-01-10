@@ -7,7 +7,7 @@ import { Employee } from "src/modules/employee/entities/employee.entity";
 export declare class AttendacneService {
     private readonly attendanceRepository;
     constructor(attendanceRepository: Repository<Attendance>);
-    markAttendanceManually(employee: Employee, date: string, inTime: string, outTime: any): Promise<any>;
+    markAttendanceManually(employee: Employee, date: string, inTime: string, outTime: string): Promise<any>;
     markAttendance(employee: Employee): Promise<any>;
     getAttendance(employeeNumber: number, attendanceDate: string): Promise<any>;
     getAttendanceByMonth(getAttendanceDto: GetAttendanceDto, employeeNumber: any): Promise<any[]>;

@@ -19,39 +19,47 @@ const data_not_found_exception_1 = require("../../Helper/Exception/data-not-foun
 const typeorm_2 = require("typeorm");
 const employee_entity_1 = require("./entities/employee.entity");
 let EmployeeService = class EmployeeService {
-    constructor(employeeRepository) {
+    constructor(connection, employeeRepository) {
+        this.connection = connection;
         this.employeeRepository = employeeRepository;
     }
     async findByEmployee(employeeNumber) {
         return await this.employeeRepository.find({
             where: {
-                employee_number: employeeNumber
+                employee_number: employeeNumber,
             },
-            relations: ["employee_station", "employee_station.station"]
+            relations: ["employee_station", "employee_station.station"],
         });
     }
     async findByShift(employeeNumber) {
-        return this.employeeRepository.findOneOrFail({
-            relations: ['shift'],
+        return this.employeeRepository
+            .findOneOrFail({
+            relations: ["shift"],
             where: {
-                employee_number: employeeNumber
-            }
-        }).catch(error => {
+                employee_number: employeeNumber,
+            },
+        })
+            .catch((error) => {
             throw data_not_found_exception_1.DataNotFoundException.exception("Invalid Employee");
         });
+    }
+    async findEmployee() {
+        return this.connection.query("SELECT employee_number, employee_name FROM employees");
     }
     async find() {
         return this.employeeRepository.find({
             where: {
-                is_deleted: false
-            }
+                is_deleted: false,
+            },
         });
     }
 };
 EmployeeService = __decorate([
     (0, common_1.Injectable)(),
-    __param(0, (0, typeorm_1.InjectRepository)(employee_entity_1.Employee)),
-    __metadata("design:paramtypes", [typeorm_2.Repository])
+    __param(0, (0, typeorm_1.InjectConnection)()),
+    __param(1, (0, typeorm_1.InjectRepository)(employee_entity_1.Employee)),
+    __metadata("design:paramtypes", [typeorm_2.Connection,
+        typeorm_2.Repository])
 ], EmployeeService);
 exports.EmployeeService = EmployeeService;
 //# sourceMappingURL=employee.service.js.map
