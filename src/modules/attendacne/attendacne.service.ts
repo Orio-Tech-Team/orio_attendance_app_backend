@@ -206,8 +206,15 @@ export class AttendacneService {
   async getAttendanceData(getAttendanceDto: GetAttendanceDataDto) {
     let query = `SELECT e.id,e.shift_id,e.employee_number,e.employee_name,IFNULL(a.intime,0) as intime,IFNULL(a.outtime,0) as outtime,IFNULL(a.type,'Absent') as type,DATE_FORMAT(a.attendance_date, '%Y-%m-%d') as attendance_date, IFNULL(TIMEDIFF(outtime,intime),0) as working_hours, CONCAT(s.start_time,' - ',s.end_time) as shift from employees e left JOIN attendance a on a.employee_number=e.employee_number  left JOIN shifts s on s.id=e.shift_id WHERE e.employee_number = '${getAttendanceDto.employee_number}'  and a.attendance_date BETWEEN '${getAttendanceDto.from_date}' AND '${getAttendanceDto.to_date}'`;
     //
-    const response: any[] = await getManager().query(query);
+    var response: any[] = await getManager().query(query);
     var data_to_send: any[] = [];
+    if (response.length === 0) {
+      response = await getManager().query(
+        `SELECT e.id,e.shift_id,e.employee_number,e.employee_name, CONCAT(s.start_time,' - ',s.end_time) as shift from employees e left JOIN shifts s on s.id=e.shift_id where e.employee_number="${getAttendanceDto.employee_number}"`
+      );
+      console.log(response);
+    }
+
     //
     const start = moment(getAttendanceDto.from_date);
     const end = moment(getAttendanceDto.to_date).add(1, "days");
