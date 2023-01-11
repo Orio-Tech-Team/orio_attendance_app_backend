@@ -212,7 +212,6 @@ export class AttendacneService {
       response = await getManager().query(
         `SELECT e.id,e.shift_id,e.employee_number,e.employee_name, CONCAT(s.start_time,' - ',s.end_time) as shift from employees e left JOIN shifts s on s.id=e.shift_id where e.employee_number="${getAttendanceDto.employee_number}"`
       );
-      console.log(response);
     }
 
     //
