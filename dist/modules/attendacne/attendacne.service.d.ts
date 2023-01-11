@@ -1,12 +1,13 @@
 import { Attendance } from "./entities/attendacne.entity";
-import { Repository } from "typeorm";
+import { Repository, Connection } from "typeorm";
 import { GetAttendanceDto } from "./dto/get-attendance.dto";
 import { GetAttendanceServerDto } from "./dto/get-attendance-server.dto";
 import { GetAttendanceDataDto } from "./dto/get-attendance-data.dto";
 import { Employee } from "src/modules/employee/entities/employee.entity";
 export declare class AttendacneService {
+    private readonly connection;
     private readonly attendanceRepository;
-    constructor(attendanceRepository: Repository<Attendance>);
+    constructor(connection: Connection, attendanceRepository: Repository<Attendance>);
     markAttendanceManually(employee: Employee, date: string, inTime: string, outTime: string): Promise<any>;
     markAttendance(employee: Employee): Promise<any>;
     getAttendance(employeeNumber: number, attendanceDate: string): Promise<any>;

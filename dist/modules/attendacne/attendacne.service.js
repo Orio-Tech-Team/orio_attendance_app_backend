@@ -18,9 +18,9 @@ const typeorm_1 = require("@nestjs/typeorm");
 const attendacne_entity_1 = require("./entities/attendacne.entity");
 const typeorm_2 = require("typeorm");
 const date_common_1 = require("../../Helper/common/date.common");
-const typeorm_3 = require("typeorm");
 let AttendacneService = class AttendacneService {
-    constructor(attendanceRepository) {
+    constructor(connection, attendanceRepository) {
+        this.connection = connection;
         this.attendanceRepository = attendanceRepository;
     }
     async markAttendanceManually(employee, date, inTime, outTime) {
@@ -147,23 +147,16 @@ let AttendacneService = class AttendacneService {
         });
     }
     async getAttendanceDataDto(getAttendanceDataDto) {
-        let query = `SELECT e.id,e.shift_id,e.employee_number,e.employee_name,IFNULL(a.intime,0) as intime,IFNULL(a.outtime,0) as outtime,IFNULL(a.type,'Absent') as type,'${getAttendanceDataDto.from_date}' as attendance_date, IFNULL(TIMEDIFF(outtime,intime),0) as working_hours, CONCAT(s.start_time,' - ',s.end_time) as shift from employees e left JOIN attendance a on a.employee_number=e.employee_number and a.attendance_date='${getAttendanceDataDto.from_date}' left JOIN shifts s on s.id=e.shift_id`;
-        if (!getAttendanceDataDto.employee_number) {
-            return await (0, typeorm_3.getManager)().query(query);
-        }
-        else {
-            query +=
-                " WHERE employees.employee_number ='" +
-                    getAttendanceDataDto.employee_number +
-                    "'";
-            return await (0, typeorm_3.getManager)().query(query);
-        }
+        let query_temp = `SELECT employee_number,attendance_date,type,intime,outtime FROM attendance WHERE employee_number = "${getAttendanceDataDto.employee_number}" AND attendance_date between "${getAttendanceDataDto.from_date}" AND "${getAttendanceDataDto.to_date}"`;
+        return this.connection.query(query_temp);
     }
 };
 AttendacneService = __decorate([
     (0, common_1.Injectable)(),
-    __param(0, (0, typeorm_1.InjectRepository)(attendacne_entity_1.Attendance)),
-    __metadata("design:paramtypes", [typeorm_2.Repository])
+    __param(0, (0, typeorm_1.InjectConnection)()),
+    __param(1, (0, typeorm_1.InjectRepository)(attendacne_entity_1.Attendance)),
+    __metadata("design:paramtypes", [typeorm_2.Connection,
+        typeorm_2.Repository])
 ], AttendacneService);
 exports.AttendacneService = AttendacneService;
 //# sourceMappingURL=attendacne.service.js.map
