@@ -12,4 +12,5 @@ export declare class AttendacneController {
     getAttendance(getAttendanceDto: GetAttendanceDto, request: any): Promise<any[]>;
     getAttendanceServer(getAttenadanceServerData: GetAttendanceServerDto): Promise<import("./entities/attendacne.entity").Attendance[]>;
     function(getAttendanceDataDto: GetAttendanceDataDto): Promise<any>;
+    getAttendanceData(getAttendanceDataDto: GetAttendanceDataDto): Promise<any[]>;
 }

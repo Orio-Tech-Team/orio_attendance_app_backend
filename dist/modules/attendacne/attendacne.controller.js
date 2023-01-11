@@ -48,6 +48,9 @@ let AttendacneController = class AttendacneController {
     async function(getAttendanceDataDto) {
         return await this.attendacneService.getAttendanceDataDto(getAttendanceDataDto);
     }
+    async getAttendanceData(getAttendanceDataDto) {
+        return await this.attendacneService.getAttendanceData(getAttendanceDataDto);
+    }
 };
 __decorate([
     (0, swagger_1.ApiBearerAuth)("JWT-auth"),
@@ -87,6 +90,13 @@ __decorate([
     __metadata("design:paramtypes", [get_attendance_data_dto_1.GetAttendanceDataDto]),
     __metadata("design:returntype", Promise)
 ], AttendacneController.prototype, "function", null);
+__decorate([
+    (0, common_1.Post)("get-attendance-data"),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [get_attendance_data_dto_1.GetAttendanceDataDto]),
+    __metadata("design:returntype", Promise)
+], AttendacneController.prototype, "getAttendanceData", null);
 AttendacneController = __decorate([
     (0, common_1.Controller)("attendance"),
     __metadata("design:paramtypes", [attendacne_service_1.AttendacneService,

@@ -18,9 +18,10 @@ const typeorm_1 = require("@nestjs/typeorm");
 const attendacne_entity_1 = require("./entities/attendacne.entity");
 const typeorm_2 = require("typeorm");
 const date_common_1 = require("../../Helper/common/date.common");
+const typeorm_3 = require("typeorm");
+var moment = require("moment");
 let AttendacneService = class AttendacneService {
-    constructor(connection, attendanceRepository) {
-        this.connection = connection;
+    constructor(attendanceRepository) {
         this.attendanceRepository = attendanceRepository;
     }
     async markAttendanceManually(employee, date, inTime, outTime) {
@@ -147,16 +148,47 @@ let AttendacneService = class AttendacneService {
         });
     }
     async getAttendanceDataDto(getAttendanceDataDto) {
-        let query_temp = `SELECT employee_number,attendance_date,type,intime,outtime FROM attendance WHERE employee_number = "${getAttendanceDataDto.employee_number}" AND attendance_date between "${getAttendanceDataDto.from_date}" AND "${getAttendanceDataDto.to_date}"`;
-        return this.connection.query(query_temp);
+        let query = `SELECT e.id,e.shift_id,e.employee_number,e.employee_name,IFNULL(a.intime,0) as intime,IFNULL(a.outtime,0) as outtime,IFNULL(a.type,'Absent') as type,'${getAttendanceDataDto.from_date}' as attendance_date, IFNULL(TIMEDIFF(outtime,intime),0) as working_hours, CONCAT(s.start_time,' - ',s.end_time) as shift from employees e left JOIN attendance a on a.employee_number=e.employee_number and a.attendance_date='${getAttendanceDataDto.from_date}' left JOIN shifts s on s.id=e.shift_id`;
+        if (!getAttendanceDataDto.employee_number) {
+            return await (0, typeorm_3.getManager)().query(query);
+        }
+        else {
+            query +=
+                " WHERE e.employee_number ='" +
+                    getAttendanceDataDto.employee_number +
+                    "'";
+            return await (0, typeorm_3.getManager)().query(query);
+        }
+    }
+    async getAttendanceData(getAttendanceDto) {
+        let query = `SELECT e.id,e.shift_id,e.employee_number,e.employee_name,IFNULL(a.intime,0) as intime,IFNULL(a.outtime,0) as outtime,IFNULL(a.type,'Absent') as type,DATE_FORMAT(a.attendance_date, '%Y-%m-%d') as attendance_date, IFNULL(TIMEDIFF(outtime,intime),0) as working_hours, CONCAT(s.start_time,' - ',s.end_time) as shift from employees e left JOIN attendance a on a.employee_number=e.employee_number  left JOIN shifts s on s.id=e.shift_id WHERE e.employee_number = '${getAttendanceDto.employee_number}'  and a.attendance_date BETWEEN '${getAttendanceDto.from_date}' AND '${getAttendanceDto.to_date}'`;
+        const response = await (0, typeorm_3.getManager)().query(query);
+        var data_to_send = [];
+        const start = moment(getAttendanceDto.from_date);
+        const end = moment(getAttendanceDto.to_date).add(1, "days");
+        for (let m = start; m.isBefore(end); m.add(1, "days")) {
+            var each_date = m.format("YYYY-MM-DD");
+            var each_day = moment(each_date).day();
+            var temp_data = response[0];
+            const found_data = response.find((each_attendance) => each_attendance.attendance_date == each_date);
+            if (each_day != 0 && each_day != 6) {
+                if (found_data === undefined) {
+                    {
+                        data_to_send.push(Object.assign(Object.assign({}, temp_data), { intime: "00:00:00", outtime: "00:00:00", type: "Absent", attendance_date: each_date, working_hours: "00:00:00" }));
+                    }
+                }
+                else {
+                    data_to_send.push(found_data);
+                }
+            }
+        }
+        return data_to_send;
     }
 };
 AttendacneService = __decorate([
     (0, common_1.Injectable)(),
-    __param(0, (0, typeorm_1.InjectConnection)()),
-    __param(1, (0, typeorm_1.InjectRepository)(attendacne_entity_1.Attendance)),
-    __metadata("design:paramtypes", [typeorm_2.Connection,
-        typeorm_2.Repository])
+    __param(0, (0, typeorm_1.InjectRepository)(attendacne_entity_1.Attendance)),
+    __metadata("design:paramtypes", [typeorm_2.Repository])
 ], AttendacneService);
 exports.AttendacneService = AttendacneService;
 //# sourceMappingURL=attendacne.service.js.map

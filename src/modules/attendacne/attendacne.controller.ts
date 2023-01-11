@@ -67,4 +67,9 @@ export class AttendacneController {
       getAttendanceDataDto
     );
   }
+  //
+  @Post("get-attendance-data")
+  async getAttendanceData(@Body() getAttendanceDataDto: GetAttendanceDataDto) {
+    return await this.attendacneService.getAttendanceData(getAttendanceDataDto);
+  }
 }

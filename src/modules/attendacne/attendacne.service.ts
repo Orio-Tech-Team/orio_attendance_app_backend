@@ -9,6 +9,7 @@ import { GetAttendanceDataDto } from "./dto/get-attendance-data.dto";
 import { getConnection } from "typeorm";
 import { Employee } from "src/modules/employee/entities/employee.entity";
 import { getManager } from "typeorm";
+var moment = require("moment");
 
 @Injectable()
 export class AttendacneService {
@@ -195,10 +196,49 @@ export class AttendacneService {
       return await getManager().query(query);
     } else {
       query +=
-        " WHERE employees.employee_number ='" +
+        " WHERE e.employee_number ='" +
         getAttendanceDataDto.employee_number +
         "'";
       return await getManager().query(query);
     }
+  }
+  //
+  async getAttendanceData(getAttendanceDto: GetAttendanceDataDto) {
+    let query = `SELECT e.id,e.shift_id,e.employee_number,e.employee_name,IFNULL(a.intime,0) as intime,IFNULL(a.outtime,0) as outtime,IFNULL(a.type,'Absent') as type,DATE_FORMAT(a.attendance_date, '%Y-%m-%d') as attendance_date, IFNULL(TIMEDIFF(outtime,intime),0) as working_hours, CONCAT(s.start_time,' - ',s.end_time) as shift from employees e left JOIN attendance a on a.employee_number=e.employee_number  left JOIN shifts s on s.id=e.shift_id WHERE e.employee_number = '${getAttendanceDto.employee_number}'  and a.attendance_date BETWEEN '${getAttendanceDto.from_date}' AND '${getAttendanceDto.to_date}'`;
+    //
+    const response: any[] = await getManager().query(query);
+    var data_to_send: any[] = [];
+    //
+    const start = moment(getAttendanceDto.from_date);
+    const end = moment(getAttendanceDto.to_date).add(1, "days");
+
+    for (let m = start; m.isBefore(end); m.add(1, "days")) {
+      var each_date: string = m.format("YYYY-MM-DD");
+      var each_day = moment(each_date).day();
+
+      var temp_data: any = response[0];
+      //
+      const found_data = response.find(
+        (each_attendance: any) => each_attendance.attendance_date == each_date
+      );
+      if (each_day != 0 && each_day != 6) {
+        if (found_data === undefined) {
+          {
+            data_to_send.push({
+              ...temp_data,
+              intime: "00:00:00",
+              outtime: "00:00:00",
+              type: "Absent",
+              attendance_date: each_date,
+              working_hours: "00:00:00",
+            });
+          }
+        } else {
+          data_to_send.push(found_data);
+        }
+      }
+    }
+    //
+    return data_to_send;
   }
 }
